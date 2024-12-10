@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from messenger.models import Message, Tag
-from messenger.serializers import MessageSerializer, TagSerializer
+from messenger.serializers import MessageSerializer, TagSerializer, MessageListSerializer
+
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -77,7 +78,24 @@ from messenger.serializers import MessageSerializer, TagSerializer
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
-    serializer_class = MessageSerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return MessageListSerializer
+
+        return MessageSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        instance = serializer.instance
+        response_serializer = MessageListSerializer(instance)
+
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
