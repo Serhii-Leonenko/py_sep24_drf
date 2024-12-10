@@ -1,10 +1,14 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
-from messenger.views import MessageListView, TagListView
+from messenger.views import MessageViewSet, TagViewSet
 
 app_name = "messenger"
 
+router = routers.DefaultRouter()
+router.register("messages", MessageViewSet, basename="messages")
+router.register("tags", TagViewSet, basename="tags")
+
 urlpatterns = [
-    path("messages/", MessageListView.as_view(), name="message-list"),
-    path("tags/", TagListView.as_view(), name="tag-list")
+    path("", include(router.urls))
 ]

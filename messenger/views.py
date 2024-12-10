@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.request import Request
@@ -62,12 +62,24 @@ from messenger.serializers import MessageSerializer, TagSerializer
 
 # USE  generics (fix SRP and DRY issues above)
 
-class MessageListView(generics.ListCreateAPIView):
+# class MessageListView(generics.ListCreateAPIView):
+#     queryset = Message.objects.all()
+#     serializer_class = MessageSerializer
+#
+#
+# class TagListView(generics.ListCreateAPIView):
+#     queryset = Tag.objects.all()
+#     serializer_class = TagSerializer
+#
+
+
+# USE viewsets for the methods-actions mapping
+# ModelViewSet - implements full CRUD
+class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
-
-class TagListView(generics.ListCreateAPIView):
+class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
@@ -163,7 +175,7 @@ class TagList(ListCreateAPIView):
 # -------------------------------------Method - Action mapping------------------------------------------------
 # get - list
 # post - create
-# get (for detail page) - retrieve
+# get/<pk>/ (for detail page) - retrieve
 # put (for detail page) - update
 # patch (for detail page) - partial_update
 # delete (for detail page) - destroy
