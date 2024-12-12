@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from messenger.models import Message, Tag
-from messenger.serializers import MessageSerializer, TagSerializer, MessageListSerializer
+from messenger.serializers import MessageSerializer, TagSerializer, MessageListSerializer, MessageDetailSerializer
 
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -81,8 +81,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.select_related("user")
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve"):
+        if self.action == "list":
             return MessageListSerializer
+
+        if self.action == "retrieve":
+            return MessageDetailSerializer
 
         return MessageSerializer
 

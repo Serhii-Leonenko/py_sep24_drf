@@ -22,20 +22,22 @@ class MessageSerializer(serializers.ModelSerializer):
             "created_at",
             "user",
         )
+        # DON'T USE fields = "__all__" !!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-class MessageListSerializer(MessageSerializer):
-    user = UserSerializer(read_only=True)
-
+class MessageListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = (
             "id",
-            "text",
+            "text_preview",
             "created_at",
             "user",
         )
-        # DON'T USE fields = "__all__" !!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+class MessageDetailSerializer(MessageSerializer):
+    user = UserSerializer(read_only=True)
 
 
 class TagSerializer(serializers.ModelSerializer):
