@@ -9,6 +9,4 @@ router = routers.DefaultRouter()
 router.register("messages", MessageViewSet, basename="messages")
 router.register("tags", TagViewSet, basename="tags")
 
-urlpatterns = [
-    path("", include(router.urls))
-]
+urlpatterns = [path("", include(router.urls))]

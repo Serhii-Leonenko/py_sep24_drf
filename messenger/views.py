@@ -9,7 +9,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from messenger.models import Message, Tag
-from messenger.serializers import MessageSerializer, TagSerializer, MessageListSerializer, MessageDetailSerializer
+from messenger.serializers import (
+    MessageSerializer,
+    TagSerializer,
+    MessageListSerializer,
+    MessageDetailSerializer,
+)
 
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -79,6 +84,8 @@ from messenger.serializers import MessageSerializer, TagSerializer, MessageListS
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.select_related("user")
+    filterset_fields = ("user",)
+    ordering_fields = ("created_at",)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -89,6 +96,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
         return MessageSerializer
 
+
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -96,6 +104,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
 # -------------------------------------OUR CUSTOM DRY FIX-------------------------------------------------------
 # don't use these examples in your projects
+
 
 class ListView(APIView):
     queryset = None
@@ -158,6 +167,7 @@ class ListMixin:
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class CreateMixin:
     def create(self, request: Request) -> Response:
         serializer = self.get_serializer_class()(data=request.data)
@@ -166,6 +176,7 @@ class CreateMixin:
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ListCreateAPIView(ListMixin, CreateMixin, GenericAPIView):
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -173,9 +184,11 @@ class ListCreateAPIView(ListMixin, CreateMixin, GenericAPIView):
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
+
 class MessageList(ListCreateAPIView):
     queryset = Message.objects.filter()
     serializer_class = MessageSerializer
+
 
 class TagList(ListCreateAPIView):
     queryset = Tag.objects.all()
