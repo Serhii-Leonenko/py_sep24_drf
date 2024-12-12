@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.template.context_processors import request
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
@@ -77,25 +78,13 @@ from messenger.serializers import MessageSerializer, TagSerializer, MessageListS
 # USE viewsets for the methods-actions mapping
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
+    queryset = Message.objects.select_related("user")
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action in ("list", "retrieve"):
             return MessageListSerializer
 
         return MessageSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-
-        instance = serializer.instance
-        response_serializer = MessageListSerializer(instance)
-
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()

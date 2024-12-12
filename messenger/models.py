@@ -13,6 +13,13 @@ class Message(models.Model):
         related_name="messages"
     )
 
+    @property
+    def text_preview(self):
+        if len(self.text) < 50:
+            return str(self)
+
+        return f"{self.text[:50:]}..."
+
     def __str__(self):
         return self.text[:10]
 

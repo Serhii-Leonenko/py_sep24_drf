@@ -1,6 +1,16 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from messenger.models import Message, Tag
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = (
+            "id",
+            "username",
+        )
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -10,12 +20,12 @@ class MessageSerializer(serializers.ModelSerializer):
             "id",
             "text",
             "created_at",
-            "user"
+            "user",
         )
 
 
 class MessageListSerializer(MessageSerializer):
-    user = serializers.CharField(source="user.username") # username instead of id
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Message
@@ -23,9 +33,9 @@ class MessageListSerializer(MessageSerializer):
             "id",
             "text",
             "created_at",
-            "user"
+            "user",
         )
-        read_only_fields = fields
+        # DON'T USE fields = "__all__" !!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class TagSerializer(serializers.ModelSerializer):
