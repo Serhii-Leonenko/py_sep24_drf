@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from messenger.filters import MessageFilter
 from messenger.models import Message, Tag
 from messenger.serializers import (
     MessageSerializer,
@@ -84,8 +85,10 @@ from messenger.serializers import (
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.select_related("user")
-    filterset_fields = ("user",)
+    # filterset_fields = ("user",)
+    filterset_class = MessageFilter
     ordering_fields = ("created_at",)
+    search_fields = ["text", "user__username"]
 
     def get_serializer_class(self):
         if self.action == "list":
