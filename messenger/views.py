@@ -11,13 +11,9 @@ from rest_framework.viewsets import GenericViewSet
 
 from messenger.filters import MessageFilter
 from messenger.models import Message, Tag
-from messenger.serializers import (
-    MessageSerializer,
-    TagSerializer,
-    MessageListSerializer,
-    MessageDetailSerializer,
-)
-
+from messenger.serializers import (MessageDetailSerializer,
+                                   MessageListSerializer, MessageSerializer,
+                                   TagSerializer)
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -99,6 +95,9 @@ class MessageViewSet(viewsets.ModelViewSet):
             return MessageDetailSerializer
 
         return MessageSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class TagViewSet(viewsets.ModelViewSet):
