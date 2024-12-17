@@ -1,9 +1,11 @@
+from django.db.models import Count
 from django.shortcuts import render
 from django.template.context_processors import request
 from rest_framework import generics, status, viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import action, api_view
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -81,14 +83,15 @@ from messenger.serializers import (MessageDetailSerializer,
 # USE viewsets for the methods-actions mapping
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.select_related("user")
+    queryset = Message.objects.select_related("user").annotate(likes_count=Count("likes"))
     # filterset_fields = ("user",)
     filterset_class = MessageFilter
     ordering_fields = ("created_at",)
     search_fields = ["text", "user__username"]
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action in ["list", "like"]:
             return MessageListSerializer
 
         if self.action == "retrieve":
@@ -98,6 +101,22 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(
+        permission_classes=[IsAuthenticated]
+    )
+    def like(self, request, pk=None):
+        message = self.get_object()
+
+        like, created = Like.objects.get_or_create(message=message, user=request.user)
+
+        if not created:
+            like.delete()
+
+        message.likes_count = message.likes.count()
+        serializer = MessageListSerializer(message)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(viewsets.ModelViewSet):

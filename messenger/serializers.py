@@ -19,7 +19,8 @@ class MessageSerializer(serializers.ModelSerializer):
             "text",
             "created_at",
             "user",
-            "tags"
+            "tags",
+            "image"
         )
         read_only_fields = ("id", "user", "created_at")
         # DON'T USE fields = "__all__" !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -32,6 +33,7 @@ class MessageListSerializer(serializers.ModelSerializer):
         slug_field="name",
         read_only=True
     )
+    likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Message
@@ -40,7 +42,9 @@ class MessageListSerializer(serializers.ModelSerializer):
             "text_preview",
             "created_at",
             "user",
-            "tags"
+            "tags",
+            "image",
+            "likes_count"
         )
         read_only_fields = fields
 
