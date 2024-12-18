@@ -14,25 +14,14 @@ class TagSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = (
-            "id",
-            "text",
-            "created_at",
-            "user",
-            "tags",
-            "image"
-        )
+        fields = ("id", "text", "created_at", "user", "tags", "image")
         read_only_fields = ("id", "user", "created_at")
         # DON'T USE fields = "__all__" !!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class MessageListSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source="user.username")
-    tags = serializers.SlugRelatedField(
-        many=True,
-        slug_field="name",
-        read_only=True
-    )
+    tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -44,7 +33,7 @@ class MessageListSerializer(serializers.ModelSerializer):
             "user",
             "tags",
             "image",
-            "likes_count"
+            "likes_count",
         )
         read_only_fields = fields
 

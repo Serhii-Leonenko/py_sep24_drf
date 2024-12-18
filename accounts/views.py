@@ -15,9 +15,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class Logout(APIView):
-    @extend_schema(
-        responses={status.HTTP_204_NO_CONTENT: None}
-    )
+    @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     def get(self, request, *args, **kwargs):
         request.user.auth_token.delete()
 

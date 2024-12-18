@@ -1,6 +1,8 @@
 from django.db.models import Count
 from django.shortcuts import render
 from django.template.context_processors import request
+from django.utils.archive import extract
+from jsonschema.validators import extend
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
@@ -11,11 +13,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+
 from messenger.filters import MessageFilter
-from messenger.models import Message, Tag
-from messenger.serializers import (MessageDetailSerializer,
-                                   MessageListSerializer, MessageSerializer,
-                                   TagSerializer)
+from messenger.models import Message, Tag, Like
+from messenger.serializers import (
+    MessageDetailSerializer,
+    MessageListSerializer,
+    MessageSerializer,
+    TagSerializer,
+)
+
+from drf_spectacular.utils import extend_schema
+
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -83,12 +92,13 @@ from messenger.serializers import (MessageDetailSerializer,
 # USE viewsets for the methods-actions mapping
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.select_related("user").annotate(likes_count=Count("likes"))
+    queryset = Message.objects.select_related("user").annotate(
+        likes_count=Count("likes")
+    )
     # filterset_fields = ("user",)
     filterset_class = MessageFilter
     ordering_fields = ("created_at",)
     search_fields = ["text", "user__username"]
-    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ["list", "like"]:
@@ -102,9 +112,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @action(
-        permission_classes=[IsAuthenticated]
-    )
+    @extend_schema(request=None, responses=MessageListSerializer)
+    @action(detail=True, methods=["POST"], url_path="like")
     def like(self, request, pk=None):
         message = self.get_object()
 
