@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # third-party apps
     "rest_framework",
     "django_filters",
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+
     # local apps
     "messenger",
     "accounts",
