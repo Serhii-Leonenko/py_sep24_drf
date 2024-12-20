@@ -1,11 +1,9 @@
 from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenBlacklistView,
-)
+from rest_framework_simplejwt.views import (TokenBlacklistView,
+                                            TokenObtainPairView,
+                                            TokenRefreshView)
 
 from accounts.views import Logout, UserViewSet
 

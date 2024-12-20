@@ -2,6 +2,7 @@ from django.db.models import Count
 from django.shortcuts import render
 from django.template.context_processors import request
 from django.utils.archive import extract
+from drf_spectacular.utils import extend_schema
 from jsonschema.validators import extend
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action, api_view
@@ -13,18 +14,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-
 from messenger.filters import MessageFilter
-from messenger.models import Message, Tag, Like
-from messenger.serializers import (
-    MessageDetailSerializer,
-    MessageListSerializer,
-    MessageSerializer,
-    TagSerializer,
-)
-
-from drf_spectacular.utils import extend_schema
-
+from messenger.models import Like, Message, Tag
+from messenger.serializers import (MessageDetailSerializer,
+                                   MessageListSerializer, MessageSerializer,
+                                   TagSerializer)
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
