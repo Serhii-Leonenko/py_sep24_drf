@@ -1,7 +1,8 @@
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.shortcuts import render
 from django.template.context_processors import request
 from django.utils.archive import extract
+from django.utils.decorators import method_decorator
 from drf_spectacular.utils import extend_schema
 from jsonschema.validators import extend
 from rest_framework import generics, status, viewsets
@@ -19,6 +20,9 @@ from messenger.models import Like, Message, Tag
 from messenger.serializers import (MessageDetailSerializer,
                                    MessageListSerializer, MessageSerializer,
                                    TagSerializer)
+
+from django.views.decorators.cache import cache_page
+
 
 # VIOLATING SRP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -86,7 +90,7 @@ from messenger.serializers import (MessageDetailSerializer,
 # USE viewsets for the methods-actions mapping
 # ModelViewSet - implements full CRUD
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.select_related("user").annotate(
+    queryset = Message.objects.select_related("user").prefetch_related("tags").annotate(
         likes_count=Count("likes")
     )
     # filterset_fields = ("user",)
@@ -120,6 +124,10 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer = MessageListSerializer(message)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @method_decorator(cache_page(60 * 5, key_prefix="message_view"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
 
 class TagViewSet(viewsets.ModelViewSet):
