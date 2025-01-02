@@ -29,7 +29,7 @@ class Message(UUIDBaseModel):
         return f"{self.text[:50:]}..."
 
     def __str__(self):
-        return self.text[:10]
+        return self.text[:20]
 
 
 class Like(UUIDBaseModel):
