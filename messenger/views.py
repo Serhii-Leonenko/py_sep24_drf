@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.template.context_processors import request
 from django.utils.archive import extract
 from django.utils.decorators import method_decorator
+from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import extend_schema
 from jsonschema.validators import extend
 from rest_framework import generics, status, viewsets
@@ -15,8 +16,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from base.mixins import BaseViewMethodsMixin
 from messenger.filters import MessageFilter
 from messenger.models import Like, Message, Tag
+from messenger.permissions import IsOwner
 from messenger.serializers import (MessageDetailSerializer,
                                    MessageListSerializer, MessageSerializer,
                                    TagSerializer)
@@ -89,7 +92,7 @@ from django.views.decorators.cache import cache_page
 
 # USE viewsets for the methods-actions mapping
 # ModelViewSet - implements full CRUD
-class MessageViewSet(viewsets.ModelViewSet):
+class MessageViewSet(BaseViewMethodsMixin, viewsets.ModelViewSet):
     queryset = Message.objects.select_related("user").prefetch_related("tags").annotate(
         likes_count=Count("likes")
     )
@@ -98,14 +101,28 @@ class MessageViewSet(viewsets.ModelViewSet):
     ordering_fields = ("created_at",)
     search_fields = ["text", "user__username"]
 
-    def get_serializer_class(self):
-        if self.action in ["list", "like"]:
-            return MessageListSerializer
+    action_serializer_classes = {
+        "list": MessageListSerializer,
+        "retrieve": MessageDetailSerializer,
+        "like": MessageListSerializer,
+        "create": MessageSerializer,
+        "update": MessageSerializer,
+        "partial_update": MessageSerializer
+    }
 
-        if self.action == "retrieve":
-            return MessageDetailSerializer
+    action_permission_classes = {
+        "list": [IsAuthenticated],
+        "retrieve": [IsOwner],
+        "delete": [IsOwner],
+        "like": [IsAuthenticated],
+        "create": [IsAuthenticated],
+        "update": [IsOwner],
+        "partial_update": [IsOwner]
+    }
 
-        return MessageSerializer
+    @method_decorator(cache_page(60 * 5, key_prefix="message_view"))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -125,6 +142,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @method_decorator(vary_on_headers("Authorization"))
     @method_decorator(cache_page(60 * 5, key_prefix="message_view"))
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
